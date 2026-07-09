@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -49,15 +49,15 @@ app.include_router(dashboard_admin.router)
 
 
 @app.get("/", tags=["صفحه اصلی"])
-async def root(request: Request):
+async def root(request):
     return templates.TemplateResponse(request, "index.html")
 
 
 @app.get("/dashboard/farmer", tags=["صفحه اصلی"])
-async def farmer_dashboard_page(request: Request):
+async def farmer_dashboard_page(request):
     return templates.TemplateResponse(request, "farmer_dashboard.html")
 
 
 @app.get("/dashboard/admin", tags=["صفحه اصلی"])
-async def admin_dashboard_page(request: Request):
+async def admin_dashboard_page(request):
     return templates.TemplateResponse(request, "admin_dashboard.html")
