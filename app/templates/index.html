@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ورود به سیستم - کشاورزی هوشمند</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h1>🌱 سیستم کشاورزی هوشمند</h1>
+            <p>سیستم مدیریت هوشمند مزارع</p>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchLoginTab('farmer')">کشاورز</button>
+                <button class="tab" onclick="switchLoginTab('admin')">مدیر</button>
+            </div>
+
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label>نام کاربری</label>
+                    <input type="text" id="loginUsername" required placeholder="نام کاربری خود را وارد کنید">
+                </div>
+                <div class="form-group">
+                    <label>رمز عبور</label>
+                    <input type="password" id="loginPassword" required placeholder="رمز عبور">
+                </div>
+                <input type="hidden" id="loginRole" value="farmer">
+                <div class="form-actions" style="justify-content:center">
+                    <button type="submit" class="btn btn-primary" style="width:100%;padding:12px">ورود</button>
+                </div>
+            </form>
+
+            <div style="margin-top:20px;text-align:center;color:#666;font-size:0.85rem">
+                <p>نمونه ورود:</p>
+                <p>کشاورز: farmer1 / farmer123</p>
+                <p>مدیر: admin / admin123</p>
+            </div>
+
+            <div id="loginError" style="display:none;margin-top:15px;padding:10px;background:#ffebee;border-radius:8px;color:#c62828;text-align:center"></div>
+        </div>
+    </div>
+
+    <script>
+        function switchLoginTab(role) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('loginRole').value = role;
+        }
+
+        async function login(e) {
+            e.preventDefault();
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('loginUsername').value,
+                        password: document.getElementById('loginPassword').value,
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    const prefix = data.role === 'admin' ? 'admin' : 'farmer';
+                    localStorage.setItem(`${prefix}_token`, data.access_token);
+                    localStorage.setItem(`${prefix}_role`, data.role);
+
+                    if (data.role === 'admin') {
+                        window.location.href = '/dashboard/admin';
+                    } else {
+                        window.location.href = '/dashboard/farmer';
+                    }
+                } else {
+                    errorDiv.textContent = data.detail || 'خطا در ورود';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'خطا در ارتباط با سرور';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const farmerToken = localStorage.getItem('farmer_token');
+            const adminToken = localStorage.getItem('admin_token');
+            const farmerRole = localStorage.getItem('farmer_role');
+            const adminRole = localStorage.getItem('admin_role');
+
+            if (adminToken && adminRole === 'admin') {
+                window.location.href = '/dashboard/admin';
+            } else if (farmerToken && farmerRole === 'farmer') {
+                window.location.href = '/dashboard/farmer';
+            }
+        });
+    </script>
+</body>
+</html>

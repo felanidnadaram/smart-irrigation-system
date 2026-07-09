@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داشبورد مدیر - سیستم کشاورزی هوشمند</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="header" style="background: linear-gradient(135deg, #1a237e, #3f51b5);">
+        <h1>⚙️ داشبورد مدیر</h1>
+        <div class="user-info">
+            <span id="userName">مدیر سیستم</span>
+            <button class="btn btn-logout" onclick="logout()">خروج</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">نمای کلی</button>
+            <button class="tab" onclick="switchTab('users')">مدیریت کاربران</button>
+            <button class="tab" onclick="switchTab('fields')">مدیریت مزارع</button>
+            <button class="tab" onclick="switchTab('decisions')">تصمیمات</button>
+            <button class="tab" onclick="switchTab('settings')">تنظیمات</button>
+        </div>
+
+        <div id="tab-overview">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card"><h3 id="totalUsers">0</h3><p>کل کاربران</p></div>
+                <div class="stat-card info"><h3 id="totalFields">0</h3><p>کل مزارع</p></div>
+                <div class="stat-card warning"><h3 id="totalReadings">0</h3><p>کل داده‌ها</p></div>
+                <div class="stat-card danger"><h3 id="unresolvedDecisions">0</h3><p>تصمیمات حل‌نشده</p></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><span>میانگین داده‌های ۲۴ ساعت اخیر</span></div>
+                <div class="card-body">
+                    <div class="sensor-values" id="avgSensors">
+                        <div class="sensor-item"><div class="value" id="avgMoisture">-</div><div class="label">رطوبت خاک (%)</div></div>
+                        <div class="sensor-item"><div class="value" id="avgTemp">-</div><div class="label">دما (°C)</div></div>
+                        <div class="sensor-item"><div class="value" id="avgHumidity">-</div><div class="label">رطوبت هوا (%)</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>رویدادهای اخیر سیستم</span>
+                    <button class="btn btn-primary btn-sm" onclick="generateAllData()">تولید داده برای همه</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>نوع</th><th>پیام</th><th>زمان</th></tr></thead>
+                            <tbody id="eventsBody"><tr><td colspan="3" class="empty-state">در حال بارگذاری...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-users" style="display:none">
+            <div class="card">
+                <div class="card-header">
+                    <span>مدیریت کاربران</span>
+                    <button class="btn btn-primary btn-sm" onclick="showAddUserModal()">+ کاربر جدید</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>نام کاربری</th><th>نام کامل</th><th>نقش</th><th>تلفن</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                            <tbody id="usersBody"><tr><td colspan="6" class="empty-state">در حال بارگذاری...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-fields" style="display:none">
+            <div class="card">
+                <div class="card-header">
+                    <span>مدیریت مزارع</span>
+                    <button class="btn btn-primary btn-sm" onclick="showAddFieldModal()">+ مزرعه جدید</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>نام</th><th>موقعیت</th><th>محصول</th><th>مساحت</th><th>مالک</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+                            <tbody id="adminFieldsBody"><tr><td colspan="7" class="empty-state">در حال بارگذاری...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-decisions" style="display:none">
+            <div class="card">
+                <div class="card-header"><span>تمام تصمیمات سیستم</span></div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>نوع</th><th>عنوان</th><th>توضیحات</th><th>اولویت</th><th>مزرعه</th><th>وضعیت</th><th>زمان</th></tr></thead>
+                            <tbody id="decisionsBody"><tr><td colspan="7" class="empty-state">در حال بارگذاری...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-settings" style="display:none">
+            <div class="card">
+                <div class="card-header"><span>آستانه‌های جهانی تصمیم‌گیری</span></div>
+                <div class="card-body">
+                    <form onsubmit="updateThresholds(event)">
+                        <div class="form-group">
+                            <label>حداقل رطوبت خاک (%)</label>
+                            <input type="number" step="0.1" id="thSoilMoistureLow">
+                        </div>
+                        <div class="form-group">
+                            <label>حداکثر رطوبت خاک (%)</label>
+                            <input type="number" step="0.1" id="thSoilMoistureHigh">
+                        </div>
+                        <div class="form-group">
+                            <label>حداکثر دما (°C)</label>
+                            <input type="number" step="0.1" id="thTempHigh">
+                        </div>
+                        <div class="form-group">
+                            <label>حداقل دما (°C)</label>
+                            <input type="number" step="0.1" id="thTempLow">
+                        </div>
+                        <div class="form-group">
+                            <label>حداقل رطوبت هوا (%)</label>
+                            <input type="number" step="0.1" id="thHumidityLow">
+                        </div>
+                        <div class="form-group">
+                            <label>حداکثر رطوبت هوا (%)</label>
+                            <input type="number" step="0.1" id="thHumidityHigh">
+                        </div>
+                        <div class="form-group">
+                            <label>حداکثر شدت نور (لوکس)</label>
+                            <input type="number" id="thLightHigh">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">بروزرسانی آستانه‌ها</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addUserModal">
+        <div class="modal">
+            <h2>افزودن کاربر جدید</h2>
+            <form onsubmit="createUser(event)">
+                <div class="form-group">
+                    <label>نام کاربری</label>
+                    <input type="text" id="newUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>رمز عبور</label>
+                    <input type="password" id="newPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>نام کامل</label>
+                    <input type="text" id="newFullName" required>
+                </div>
+                <div class="form-group">
+                    <label>تلفن</label>
+                    <input type="text" id="newPhone">
+                </div>
+                <div class="form-group">
+                    <label>نقش</label>
+                    <select id="newRole">
+                        <option value="farmer">کشاورز</option>
+                        <option value="admin">مدیر</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">ذخیره</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addUserModal')">لغو</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addFieldModal">
+        <div class="modal">
+            <h2>افزودن مزرعه جدید</h2>
+            <form onsubmit="createField(event)">
+                <div class="form-group">
+                    <label>مالک (شناسه کشاورز)</label>
+                    <input type="text" id="adminFieldOwnerId" required>
+                </div>
+                <div class="form-group">
+                    <label>نام مزرعه</label>
+                    <input type="text" id="adminFieldName" required>
+                </div>
+                <div class="form-group">
+                    <label>موقعیت</label>
+                    <input type="text" id="adminFieldLocation" required>
+                </div>
+                <div class="form-group">
+                    <label>نوع محصول</label>
+                    <input type="text" id="adminFieldCrop" required>
+                </div>
+                <div class="form-group">
+                    <label>مساحت (هکتار)</label>
+                    <input type="number" step="0.1" id="adminFieldArea">
+                </div>
+                <div class="form-group">
+                    <label>یادداشت</label>
+                    <textarea id="adminFieldNotes" rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">ذخیره</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addFieldModal')">لغو</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

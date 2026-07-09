@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داشبورد کشاورز - سیستم کشاورزی هوشمند</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>🌱 داشبورد کشاورز</h1>
+        <div class="user-info">
+            <span id="userName">کشاورز</span>
+            <button class="btn btn-logout" onclick="logout()">خروج</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><h3 id="totalFields">0</h3><p>تعداد مزارع</p></div>
+            <div class="stat-card info"><h3 id="activeFields">0</h3><p>مزارع فعال</p></div>
+            <div class="stat-card warning"><h3 id="totalAlerts">0</h3><p>هشدارهای فعال</p></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span>مزارع من</span>
+                <button class="btn btn-primary btn-sm" onclick="showAddFieldModal()">+ مزرعه جدید</button>
+            </div>
+            <div class="card-body">
+                <div class="fields-grid" id="fieldsGrid">
+                    <div class="empty-state"><h3>در حال بارگذاری...</h3></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><span>هشدارها و توصیه‌ها</span></div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table id="alertsTable">
+                        <thead>
+                            <tr>
+                                <th>نوع</th>
+                                <th>عنوان</th>
+                                <th>توضیحات</th>
+                                <th>اولویت</th>
+                                <th>زمان</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alertsBody">
+                            <tr><td colspan="6" class="empty-state">در حال بارگذاری...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addFieldModal">
+        <div class="modal">
+            <h2>افزودن مزرعه جدید</h2>
+            <form onsubmit="createField(event)">
+                <div class="form-group">
+                    <label>نام مزرعه</label>
+                    <input type="text" id="fieldName" required>
+                </div>
+                <div class="form-group">
+                    <label>موقعیت</label>
+                    <input type="text" id="fieldLocation" required>
+                </div>
+                <div class="form-group">
+                    <label>نوع محصول</label>
+                    <input type="text" id="fieldCrop" required>
+                </div>
+                <div class="form-group">
+                    <label>مساحت (هکتار)</label>
+                    <input type="number" step="0.1" id="fieldArea">
+                </div>
+                <div class="form-group">
+                    <label>یادداشت</label>
+                    <textarea id="fieldNotes" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>برنامه آبیاری</label>
+                    <input type="text" id="fieldIrrigation" placeholder="مثال: هر ۳ روز یکبار">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">ذخیره</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addFieldModal')">لغو</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editFieldModal">
+        <div class="modal">
+            <h2>ویرایش مزرعه</h2>
+            <form onsubmit="updateField(event)">
+                <input type="hidden" id="editFieldId">
+                <div class="form-group">
+                    <label>نام مزرعه</label>
+                    <input type="text" id="editFieldName" required>
+                </div>
+                <div class="form-group">
+                    <label>موقعیت</label>
+                    <input type="text" id="editFieldLocation" required>
+                </div>
+                <div class="form-group">
+                    <label>نوع محصول</label>
+                    <input type="text" id="editFieldCrop" required>
+                </div>
+                <div class="form-group">
+                    <label>مساحت (هکتار)</label>
+                    <input type="number" step="0.1" id="editFieldArea">
+                </div>
+                <div class="form-group">
+                    <label>یادداشت</label>
+                    <textarea id="editFieldNotes" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>برنامه آبیاری</label>
+                    <input type="text" id="editFieldIrrigation">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">بروزرسانی</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editFieldModal')">لغو</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="fieldDetailModal">
+        <div class="modal" style="max-width:700px">
+            <h2 id="detailFieldTitle">جزئیات مزرعه</h2>
+            <div id="fieldDetailContent"></div>
+            <div class="form-actions" style="margin-top:15px">
+                <button class="btn btn-primary btn-sm" onclick="generateData()">تولید داده جدید</button>
+                <button class="btn btn-secondary btn-sm" onclick="closeModal('fieldDetailModal')">بستن</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/farmer.js"></script>
+</body>
+</html>
