@@ -26,6 +26,11 @@ async def close_db():
         client.close()
         print("اتصال به دیتابیس بسته شد.")
 
+def set_db(new_db):
+    global db
+    db = new_db
+
+
 
 def get_db():
     return db
